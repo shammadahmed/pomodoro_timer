@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Pomodoro Timer</title>
+</head>
+<body>
+	<header>
+		<h1>Pomodoro Timer</h1>
+	</header>
+	<main>
+		<header>
+			<label>Session Duration (1-60 mins)
+				<input type="range" value="25" id="session_duration" min="1" max="60" list="tickmarks">
+			</label>
+			<br>
+			<label for="break_duration">Break Duration (mins 1-60 mins)
+				<input type="range" value="5" id="break_duration" min="1" max="60" list="tickmarks">
+			</label>
+			<datalist id="tickmarks">
+				<option value="1"></option>
+				<option value="5"></option>
+				<option value="10"></option>
+				<option value="15"></option>
+				<option value="20"></option>
+				<option value="25"></option>
+				<option value="30"></option>
+				<option value="35"></option>
+				<option value="40"></option>
+				<option value="45"></option>
+				<option value="50"></option>
+				<option value="55"></option>
+				<option value="60"></option>
+			</datalist>
+		</header>
+		<main>
+			<section>
+				<h2 id="header">Session</h2>
+				<span id="clock">25:00</span>
+			</section>
+			<section>
+				<button id="start">Start</button>
+				<button id="reset">Reset</button>
+				<button id="pause">Pause</button>
+				<button id="stop">Stop</button>
+			</section>
+		</main>
+	</main>
+	<script>
+	// Workings
+		//1. implement the initial stage
+			// 1. sychronize the range display clock
+		//2. implement the start and pause buttons
+			//Start button
+				//1. Iterate the follwing forever
+					//1. start the countdown, change the header to "Session" and keep the clock in sync
+					//2. when the countdown finishes start the break, change the header to "Break" and keep the clock in sync
+			//Pause button
+				//. stop <whatever> countdown
+		//3. implement the stop button
+				//1. stop <whatever> countdown
+				//2. bring the display to a neutral position
+		//4. implement the reset button
+			//1. reset the session duration to 25 minutes
+			//2. stop the clock
+			//3. reset the break duration to 5 minutes
+
+	//  Pseudo code
+		//Abstractions
+			// capture the interface
+			const session_duration_range = document.getElementById('session_duration');
+			const break_duration_range = document.getElementById('break_duration');
+			const header = document.getElementById('header');
+			const clock = document.getElementById('clock');
+			const start = document.getElementById('start');
+			const stop = document.getElementById('stop');
+			const reset = document.getElementById('reset');
+			const pause = document.getElementById('pause');
+
+			let session_time_left = session_duration_range.value;
+			let break_time_left = break_duration_range.value;
+
+			let pomodoro, pomodoro_break;
+
+			const formatTime = str => {
+				let minutes = Math.floor(str);
+
+				let seconds = Math.floor((str % 1) * 60);
+
+				return `${minutes}:${seconds}`;
+
+			};
+
+			// write "update_the_clock" function
+			const update_the_clock = (str) => clock.textContent = formatTime(str);
+			// write "update_the_header" function
+			const update_the_header = (str) => header.textContent = str;
+
+			//pomodoro_continue
+			const session_continue = () => {
+				update_the_header('Session');
+
+				pomodoro = setInterval(() => {
+					update_the_clock(session_time_left -= 1/60);
+					if (session_time_left == 0) {
+						clearInterval(pomodoro);
+
+						break_time_left =  break_duration_range.value;
+
+						break_continue();
+
+					}
+				}, 1000);
+			};
+
+			const break_continue = () => {
+				update_the_header('Break');
+
+				pomodoro_break = setInterval(() => {
+					update_the_clock(break_time_left -= 1/6);
+					if (break_time_left == 0) {
+						clearInterval(pomodoro_break);
+
+						session_time_left =  session_duration_range.value;
+
+						session_continue();
+					}
+				}, 1000);
+			};
+
+		// Events
+			// write "session_duration_change_check" function
+			// Button clicks
+				// start
+				start.addEventListener('click', () => {
+					session_continue();
+				});
+				// stop
+				stop.addEventListener('click', () => {
+					if (pomodoro) clearInterval(pomodoro);
+					if (pomodoro_break) clearInterval(pomodoro_break);
+					pomodoro = undefined;
+
+					session_time_left = session_duration_range.value;
+					break_time_left = break_duration_range.value;
+
+					update_the_clock(session_duration_range.value);
+				});
+				// pause
+				pause.addEventListener('click', () => {
+					if (pomodoro) clearInterval(pomodoro);
+					if (pomodoro_break) clearInterval(pomodoro_break);
+					
+				});
+				// reset
+				reset.addEventListener('click', () => {
+					if (pomodoro) clearInterval(pomodoro);
+					if (pomodoro_break) clearInterval(pomodoro_break);
+					pomodoro = undefined;
+
+					session_duration_range.value = '25';
+					break_duration_range.value ='5';
+
+					session_time_left = session_duration_range.value;
+					break_time_left = break_duration_range.value;
+
+					update_the_clock(session_duration_range.value);
+				});
+			// Range change
+			session_duration_range.addEventListener('change', () => {
+				if (!pomodoro) {
+					update_the_clock(session_duration_range.value);
+					session_time_left = session_duration_range.value;
+				}
+			});
+
+			update_the_clock(session_duration_range.value);
+	</script>
+</body>
+</html>
